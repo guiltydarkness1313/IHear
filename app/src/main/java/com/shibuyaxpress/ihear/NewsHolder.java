@@ -8,10 +8,10 @@ import android.widget.ImageView;
  * Created by paulf on 16-Oct-17.
  */
 
-public class NoticiasHolder extends RecyclerView.ViewHolder {
+public class NewsHolder extends RecyclerView.ViewHolder {
     public ImageView imagenNoticias;
     public View root;
-    public NoticiasHolder(View itemView) {
+    public NewsHolder(View itemView) {
         super(itemView);
 
         imagenNoticias=itemView.findViewById(R.id.imgNews);
