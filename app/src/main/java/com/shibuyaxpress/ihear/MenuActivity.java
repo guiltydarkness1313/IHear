@@ -32,7 +32,7 @@ import java.util.List;
 public class MenuActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
-    private ArticleAdapter mAdapter;
+    private NewsAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ProgressBar progressBar;
     private String urlString = "http://archivo.peru21.pe/feed";
@@ -104,7 +104,7 @@ public class MenuActivity extends AppCompatActivity {
             public void onTaskCompleted(ArrayList<Article> list) {
                 //list is an Array List with all article's information
                 //set the adapter to recycler view
-                mAdapter = new ArticleAdapter(list, R.layout.row, MenuActivity.this);
+                mAdapter = new NewsAdapter(list, R.layout.row, MenuActivity.this);
                 mRecyclerView.setAdapter(mAdapter);
                 progressBar.setVisibility(View.GONE);
                 mSwipeRefreshLayout.setRefreshing(false);
