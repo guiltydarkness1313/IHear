@@ -1,41 +1,27 @@
 package com.shibuyaxpress.ihear;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
+import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.prof.rssparser.Article;
-import com.prof.rssparser.Parser;
+public class MenuActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class MenuActivity extends AppCompatActivity {
-
-    private RecyclerView mRecyclerView;
-    private NewsAdapter mAdapter;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private ProgressBar progressBar;
-    private String urlString = "http://archivo.peru21.pe/feed";
+    private RecyclerView reciclador;
+    private LinearLayoutManager manager;
+    private CategoryAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,144 +30,91 @@ public class MenuActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.list);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setHasFixedSize(true);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        reciclador=navigationView.getHeaderView(0).findViewById(R.id.reciclador_categoria);
+        News e=new News();
+        manager=new LinearLayoutManager(this);
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.container);
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorPrimaryDark);
-        mSwipeRefreshLayout.canChildScrollUp();
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        reciclador.setLayoutManager(manager);
+        reciclador.setHasFixedSize(true);
 
+        adapter= new CategoryAdapter(e.getData(),this);
+        reciclador.setAdapter(adapter);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public void onRefresh() {
-
-                mAdapter.clearData();
-                mAdapter.notifyDataSetChanged();
-                mSwipeRefreshLayout.setRefreshing(true);
-                loadFeed();
-
+            public void onClick(View view) {
+                if (drawer.isDrawerOpen(Gravity.RIGHT)) {
+                    drawer.closeDrawer(Gravity.RIGHT);
+                } else {
+                    drawer.openDrawer(Gravity.RIGHT);
+                }
             }
+
         });
+    }
 
-        if (!isNetworkAvailable()) {
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.alert_message)
-                    .setTitle(R.string.alert_title)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.alert_positive,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog,
-                                                    int id) {
-                                    finish();
-                                }
-                            });
-
-            AlertDialog alert = builder.create();
-            alert.show();
-
-        } else if (isNetworkAvailable()) {
-
-            loadFeed();
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.END)) {
+            drawer.closeDrawer(GravityCompat.END);
+        } else {
+            super.onBackPressed();
         }
     }
 
-    public void loadFeed() {
-
-        if (!mSwipeRefreshLayout.isRefreshing())
-            progressBar.setVisibility(View.VISIBLE);
-
-        Parser parser = new Parser();
-        parser.execute(urlString);
-        parser.onFinish(new Parser.OnTaskCompleted() {
-            //what to do when the parsing is done
-            @Override
-            public void onTaskCompleted(ArrayList<Article> list) {
-                //list is an Array List with all article's information
-                //set the adapter to recycler view
-                mAdapter = new NewsAdapter(list, R.layout.row, MenuActivity.this);
-                mRecyclerView.setAdapter(mAdapter);
-                progressBar.setVisibility(View.GONE);
-                mSwipeRefreshLayout.setRefreshing(false);
-
-            }
-
-            //what to do in case of error
-            @Override
-            public void onError() {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressBar.setVisibility(View.GONE);
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(MenuActivity.this, "Unable to load data. Swipe down to retry.",
-                                Toast.LENGTH_SHORT).show();
-                        Log.i("Unable to load ", "articles");
-                    }
-                });
-            }
-        });
-    }
-
-    public boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
-
-    @Override
-    public void onResume() {
-
-        super.onResume();
-        if (mAdapter != null)
-            mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        super.onDestroy();
-        if (mAdapter != null)
-            mAdapter.clearData();
-    }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            android.support.v7.app.AlertDialog alertDialog = new android.support.v7.app.AlertDialog.Builder(MenuActivity.this).create();
-            alertDialog.setTitle(R.string.app_name);
-            alertDialog.setMessage(Html.fromHtml(MenuActivity.this.getString(R.string.info_text) +
-                    " <a href='http://github.com/prof18/RSS-Parser'>GitHub.</a>" +
-                    MenuActivity.this.getString(R.string.author)));
-            alertDialog.setButton(android.support.v7.app.AlertDialog.BUTTON_NEUTRAL, "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-            alertDialog.show();
-
-            ((TextView) alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_camera) {
+            // Handle the camera action
+        } else if (id == R.id.nav_gallery) {
+
+        } else if (id == R.id.nav_slideshow) {
+
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.END);
+        return true;
     }
 }

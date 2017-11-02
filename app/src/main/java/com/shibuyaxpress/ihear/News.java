@@ -9,6 +9,7 @@ import java.util.List;
 
 public class News {
     private String nombre;
+    private String categoria;
     private String imagenURL;
     private String contenido;
     private String fecha;
@@ -16,8 +17,17 @@ public class News {
     public News() {
     }
 
-    public News(String imagenURL) {
+    public News(String categoria,String imagenURL) {
         this.imagenURL = imagenURL;
+        this.categoria=categoria;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 
     public String getNombre() {
@@ -53,17 +63,17 @@ public class News {
     }
     private ArrayList<News> lista=new ArrayList<>();
     public ArrayList<News> getData(){
-        News u=new News("https://compass-ssl.xbox.com/assets/3a/f0/3af0da7b-f5d0-418f-88ab-8ae631aafe9d.jpg?n=X1-Wireless-Controller-White_gallery_1056x594_01.jpg");
+        News u=new News("Gaming","https://compass-ssl.xbox.com/assets/3a/f0/3af0da7b-f5d0-418f-88ab-8ae631aafe9d.jpg?n=X1-Wireless-Controller-White_gallery_1056x594_01.jpg");
         lista.add(u);
-        u=new News("http://semanaeconomica.com/wp-content/uploads/2014/07/ollantahumala_balancepol%C3%ADtico.jpg");
+        u=new News("Política","http://semanaeconomica.com/wp-content/uploads/2014/07/ollantahumala_balancepol%C3%ADtico.jpg");
         lista.add(u);
-        u=new News("http://cde.2.trome.pe/ima/0/1/0/8/0/1080838.jpg");
+        u=new News("Deportes","http://cde.2.trome.pe/ima/0/1/0/8/0/1080838.jpg");
         lista.add(u);
-        u=new News("https://blog.holidaylettings.co.uk/wp-content/uploads/2015/04/lifestyle.jpg");
+        u=new News("Estilo de vida","https://blog.holidaylettings.co.uk/wp-content/uploads/2015/04/lifestyle.jpg");
         lista.add(u);
-        u=new News("http://andiplay.com/wp-content/uploads/2015/08/tecnologia.jpg");
+        u=new News("Tecnología","http://andiplay.com/wp-content/uploads/2015/08/tecnologia.jpg");
         lista.add(u);
-        u=new News("https://www.almanac.com/sites/default/files/image_nodes/thanksgiving-weather.jpg");
+        u=new News("Clima","https://www.almanac.com/sites/default/files/image_nodes/thanksgiving-weather.jpg");
         lista.add(u);
 
         return lista;

@@ -33,9 +33,5 @@ dependencies {
     compile 'com.prof.rssparser:rssparser:1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.android.support:design:26.1.0'
-    compile ('com.crazyhitty.chdev.ks:rss-manager:0.75'){
-        exclude module: 'stax'
-        exclude module: 'stax-api'
-        exclude module: 'xpp3'
-    }
+    compile 'com.jpardogo.googleprogressbar:library:1.2.0'
 }
