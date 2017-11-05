@@ -1,10 +1,12 @@
 package com.shibuyaxpress.ihear;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -15,13 +17,37 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import com.android.volley.Cache;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import at.theengine.android.simple_rss2_android.RSSItem;
+import at.theengine.android.simple_rss2_android.SimpleRss2Parser;
+import at.theengine.android.simple_rss2_android.SimpleRss2ParserCallback;
+import me.toptas.rssconverter.RssConverterFactory;
+import me.toptas.rssconverter.RssFeed;
+import me.toptas.rssconverter.RssItem;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
 
 public class MenuActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private RecyclerView reciclador;
-    private LinearLayoutManager manager;
+    private RecyclerView reciclador,recicladorNews;
+    private LinearLayoutManager manager, layoutManager;
     private CategoryAdapter adapter;
+    private NewsAdapter newsAdapter;
+    private List<RSSItem> listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +73,43 @@ public class MenuActivity extends AppCompatActivity
         adapter= new CategoryAdapter(e.getData(),this);
         reciclador.setAdapter(adapter);
         navigationView.setNavigationItemSelectedListener(this);
+        ///////////////////////////////////////////////////////////////////////
+
+        recicladorNews=findViewById(R.id.reciclador_news);
+        layoutManager=new LinearLayoutManager(this);
+        recicladorNews.setLayoutManager(layoutManager);
+        recicladorNews.setHasFixedSize(true);
+        newsAdapter=new NewsAdapter(MenuActivity.this);
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////
+        recicladorNews.setAdapter(newsAdapter);
+        ////////////////////////////////////////////////////
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://elcomercio.pe")
+                .addConverterFactory(RssConverterFactory.create())
+                .build();
+
+        RssService service = retrofit.create(RssService.class);
+        service.getRss("http://www.capital.com.pe/feed")
+                .enqueue(new Callback<RssFeed>() {
+                    @Override
+                    public void onResponse(Call<RssFeed> call, retrofit2.Response<RssFeed> response) {
+                        //en la list RSSitem se puede almacenar los elementos de cada item que se bya a descargar de la RSS
+                        List<RssItem> feed =response.body().getItems();
+
+                        newsAdapter.setLista(feed);
+                        newsAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onFailure(Call<RssFeed> call, Throwable t) {
+                        Toast.makeText(MenuActivity.this,"no hay conexión a internet", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,7 +122,10 @@ public class MenuActivity extends AppCompatActivity
             }
 
         });
-    }
+
+
+        }
+
 
     @Override
     public void onBackPressed() {
