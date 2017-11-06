@@ -51,11 +51,13 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsHolder> {
     @Override
     public void onBindViewHolder(NewsHolder holder, final int position) {
         //format=new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ROOT);
-        format=new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ROOT);
+        format=new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z",Locale.ROOT);
+        SimpleDateFormat nx=new SimpleDateFormat("dd MMMM, yyyy HH:mm a");
         date= null;
         try {
             date = format.parse(lista.get(position).getPublishDate());
-            holder.date.setText(date.toString());
+            String nex=nx.format(date);
+            holder.date.setText(nex);
 
         } catch (ParseException e) {
             e.printStackTrace();
